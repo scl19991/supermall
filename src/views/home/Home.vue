@@ -32,8 +32,8 @@ import GoodsList from 'components/content/goods/GoodsList'
 import Scroll from 'components/common/scroll/Scroll'
 import BackTop from 'components/content/backTop/BackTop'
 import {getHomeMultidata,
-        getHomeGoods} from "network/home"
-
+        getHomeGoods} from 'network/home'
+import {debounce} from 'common/util'
 
 
 export default {
@@ -68,6 +68,14 @@ export default {
     this.getHomeGoods('pop')
     this.getHomeGoods('new')
     this.getHomeGoods('sell')
+  },
+  mounted () {
+    //监听图片加载完成 不要放在created 可能拿不到
+    const refresh = debounce(this.$refs.scroll.refresh,500)
+    this.$bus.$on('itemImgLoad', () => {
+      refresh()
+    })
+    
   },
   methods: {
     /* 
