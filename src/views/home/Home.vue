@@ -34,10 +34,9 @@ import FeatureView from './childComps/FeatureView'
 import TabControl from 'components/content/tabControl/TabControl'
 import GoodsList from 'components/content/goods/GoodsList'
 import Scroll from 'components/common/scroll/Scroll'
-import BackTop from 'components/content/backTop/BackTop'
 import {getHomeMultidata,
         getHomeGoods} from 'network/home'
-import {debounce} from 'common/utils'
+import {itemListenerMixin, backTopMixin} from 'common/mixin'
 
 
 export default {
@@ -49,10 +48,10 @@ export default {
     FeatureView,
     TabControl,
     GoodsList,
-    Scroll,
-    BackTop
+    Scroll
   },
-    data(){
+  mixins: [itemListenerMixin, backTopMixin],
+  data(){
     return{
       result:null,
       banners:[],
@@ -63,10 +62,9 @@ export default {
         'sell':{page:0,list:[]},
       },
       currentType: 'pop',
-      isplay: false,
       tabOffsetTop: 0,
       ixFixed: false,
-      saveY: 0
+      saveY: 0,
     }
   },
   created() {
@@ -77,20 +75,18 @@ export default {
     this.getHomeGoods('sell')
   },
   mounted () {
-    //1.监听图片加载完成 不要放在created 可能拿不到
-    const refresh = debounce(this.$refs.scroll.refresh,500)
-    this.$bus.$on('itemImgLoad', () => {
-      refresh()
-    })
-    
   },
   activated () {
     this.$refs.scroll.refresh()
     this.$refs.scroll.scrollTo(0, this.saveY, 0)
   },
   deactivated () {
+    //1.保存y值
     this.saveY = this.$refs.scroll.scroll.y
     console.log(this.saveY);
+
+    //2.取消全局事件的监听
+    this.$bus.$off('itemImgLoad',this.ItemImgListener)
   },
   methods: {
     /* 
@@ -108,10 +104,6 @@ export default {
       this.$refs.tabControl1.currentIndex = index
       this.$refs.tabControl2.currentIndex = index
     },
-    backClick(){
-      //回到顶部
-     this.$refs.scroll.scrollTo(0,0,500)
-    },
     contentScroll(position){
       //判断BackTop是否显示
       if(position.y < -1000){
@@ -119,6 +111,7 @@ export default {
       }else{
         this.isplay =false
       }
+      //tab-control是否显示
       this.ixFixed = (-position.y) > this.tabOffsetTop
     },
     //上拉获取更多事件
