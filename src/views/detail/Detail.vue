@@ -139,14 +139,17 @@ export default {
       //1.获取购物车想展示的信息 放到vuex中共享
       const product = {}
       product.image = this.topImages[0]
-      product.title = this.detailInfo.title;
+      product.title = this.goods.title;
       product.desc = this.detailInfo.desc;
-      product.price = this.detailInfo.lowNowPrice;
+      product.price = this.goods.realPrice;
       product.iid = this.iid;
 
       //2.将商品添加到购物车里
       //this.$store.commit('addCart', product)
-      this.$store.dispatch('addCart', product)
+      //dispath可以返回一个promise对象
+      this.$store.dispatch('addCart', product).then(res => {
+        this.$toast.show(res)
+      })
     }
   },
   destroyed () {
